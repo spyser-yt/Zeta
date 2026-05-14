@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spyser Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; display: flex; height: 100vh; }
+        
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .sidebar h2 { margin-top: 0; border-bottom: 2px solid #34495e; padding-bottom: 10px; }
+        .nav-item { padding: 12px; margin: 8px 0; background: #34495e; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .nav-item:hover { background: #3b536b; }
+        .logout-btn { margin-top: auto; padding: 12px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .logout-btn:hover { background: #c0392b; }
+
+        .main-content { flex: 1; padding: 40px; box-sizing: border-box; overflow-y: auto; }
+        .header-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h1 { margin: 0 0 10px 0; color: #333; }
+        .role-badge { display: inline-block; padding: 5px 10px; border-radius: 20px; font-size: 14px; font-weight: bold; background: #3498db; color: white; }
+        
+        .panel { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #28a745; }
+        .active-panel { display: block; }
+    </style>
+</head>
+<body>
+
+    <script>
+        const userRole = localStorage.getItem('spyser_role');
+        const userId = localStorage.getItem('spyser_admission_number');
+        
+        if (!userRole) {
+            window.location.href = '/index.html';
+        }
+    </script>
+
+    <div class="sidebar">
+        <h2>Spyser Tuition</h2>
+        <div class="nav-item">Dashboard Home</div>
+        <div class="nav-item">My Profile</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="main-content">
+        <div class="header-card">
+            <h1>Welcome to the Portal</h1>
+            <span class="role-badge" id="display-role">Loading Role...</span>
+            <p>Admission ID: <b id="display-id">Loading ID...</b></p>
+        </div>
+
+        <div id="student-panel" class="panel">
+            <h3>📚 Student Portal</h3>
+            <p>Here you will be able to see your attendance, exam marks, and pending fees.</p>
+        </div>
+
+        <div id="teacher-panel" class="panel" style="border-color: #f39c12;">
+            <h3>📝 Teacher Portal</h3>
+            <p>Here you will be able to mark attendance and upload marks for your assigned batches.</p>
+        </div>
+
+        <div id="admin-panel" class="panel" style="border-color: #9b59b6;">
+            <h3>⚙️ Admin Control Center</h3>
+            <p>Here you will be able to manage all students, assign teachers, and collect fees.</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('display-role').textContent = userRole;
+        document.getElementById('display-id').textContent = userId || 'Admin Access';
+
+        if (userRole === 'Student') {
+            document.getElementById('student-panel').classList.add('active-panel');
+        } else if (userRole === 'Teacher') {
+            document.getElementById('teacher-panel').classList.add('active-panel');
+        } else if (userRole === 'Admin') {
+            document.getElementById('admin-panel').classList.add('active-panel');
+            document.getElementById('display-role').style.background = '#9b59b6';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/index.html';
+        }
+    </script>
+
+</body>
+</html>
