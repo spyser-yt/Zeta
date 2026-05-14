@@ -7,15 +7,15 @@
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 600px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full-width { grid-column: span 2; }
-        input, select, textarea, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { background: #3498db; color: white; cursor: pointer; font-weight: bold; margin-top: 20px; padding: 15px;}
-        h2 { text-align: center; color: #2c3e50; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; background: #3498db; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 20px; padding: 15px; font-size: 16px;}
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 5px;}
     </style>
 </head>
 <body>
     <div class="card">
         <h2>Complete Your Profile</h2>
-        <p style="text-align:center; color:#777;">Step 2: Personal Details</p>
+        <p style="text-align:center; color:#777; margin-bottom: 20px;">Step 2: Personal Details</p>
         <form id="step2-form">
             <div class="grid">
                 <input type="text" id="fullName" placeholder="Full Legal Name" class="full-width" required>
@@ -36,7 +36,6 @@
     </div>
 
     <script>
-        // Security: If they bypassed Step 1, send them back
         if(!localStorage.getItem('zeta_temp_email')) window.location.href = '/signup_step1.html';
 
         document.getElementById('step2-form').addEventListener('submit', (e) => {

@@ -11,12 +11,23 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Connect to Supabase PostgreSQL (Zeta Database)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false } 
 });
 
-// Helper: Generate Role-Based ID (e.g., ZETA-STU-00001 or ZETA-TCH-00001)
+const initDB = async () => {
+    try {
+        await pool.query('SELECT NOW()');
+        console.log("Connected to Zeta Postgres Database securely!");
+    } catch (err) {
+        console.error("Database connection error:", err);
+    }
+};
+initDB();
+
+// Helper: Generate Role-Based ID (e.g., ZETA-STU-00001)
 const generateZetaID = async (role) => {
     const result = await pool.query(`SELECT MAX(id) as max_id FROM users`);
     const currentMax = result.rows[0].max_id || 0; 
@@ -58,8 +69,8 @@ app.post('/api/signup', async (req, res) => {
         
         const values = [
             zetaID, role, email, hashedPassword, personalPhone,
-            fullName, dob, gender, school, classGrade, 
-            course, whatsappPhone, parentPhone, address, profilePhoto
+            fullName, dob || null, gender || null, school || 'Zeta Coaching Centre', classGrade || null, 
+            course || null, whatsappPhone || null, parentPhone || null, address || null, profilePhoto || null
         ];
 
         const result = await pool.query(query, values);
@@ -73,17 +84,19 @@ app.post('/api/signup', async (req, res) => {
         });
 
     } catch (error) {
-        if (error.code === '23505') { 
-            if (error.constraint === 'users_email_key') return res.status(400).json({ message: "Email already registered." });
+        if (error.code === '23505' && error.constraint === 'users_email_key') { 
+            return res.status(400).json({ message: "Email already registered." });
         }
         console.error("Signup Error:", error);
         res.status(500).json({ message: "Server error during account creation." });
     }
 });
 
-// --- LOGIN ROUTE (Unchanged) ---
+// --- LOGIN ROUTE ---
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ message: "Required fields missing." });
+
     try {
         const result = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
         const user = result.rows[0];
@@ -92,9 +105,18 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ message: "Invalid credentials." });
         }
 
+        if (user.status === 'Suspended') {
+            return res.status(403).json({ message: "This account is suspended. Contact Zeta administration." });
+        }
+
+        await pool.query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1`, [user.id]);
+
         res.status(200).json({ 
-            role: user.role, admissionNumber: user.admission_number, 
-            fullName: user.full_name, classGrade: user.class_grade || 'Staff', 
+            message: `Login successful! Welcome back, ${user.full_name}.`,
+            role: user.role,
+            admissionNumber: user.admission_number,
+            fullName: user.full_name,
+            classGrade: user.class_grade || 'Staff',
             school: user.school || 'Zeta'
         });
     } catch (error) {
@@ -102,4 +124,4 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`Zeta Backend live on ${PORT}`));
+app.listen(PORT, () => console.log(`Zeta Backend live on port ${PORT}`));

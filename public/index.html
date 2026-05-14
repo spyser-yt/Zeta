@@ -3,26 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Zeta Tuition</title>
+    <title>Login - Zeta Coaching Centre</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
+        body { font-family: Arial, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #555; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        button:hover { background: #218838; }
-        .footer-link { text-align: center; margin-top: 20px; font-size: 14px; color: #555; }
-        .footer-link a { color: #007bff; text-decoration: none; font-weight: bold; }
-        .footer-link a:hover { text-decoration: underline; }
-        #message { text-align: center; margin-top: 15px; font-weight: bold; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #2980b9; }
+        .footer-link { margin-top: 20px; font-size: 14px; color: #555; }
+        .footer-link a { color: #e67e22; text-decoration: none; font-weight: bold; }
+        #message { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Student Login</h2>
+    <h2>Zeta Login</h2>
     <form id="login-form">
         <div class="form-group">
             <label>Email Address</label>
@@ -32,13 +31,13 @@
             <label>Password</label>
             <input type="password" id="password" required>
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">Access Portal</button>
     </form>
     
     <div id="message"></div>
     
     <div class="footer-link">
-        New Student? <a href="/signup_setup1.html">Apply for Admission</a>
+        New to Zeta? <a href="/signup_step1.html">Apply for Admission</a>
     </div>
 </div>
 
@@ -68,11 +67,14 @@
                 messageDiv.style.color = "green";
                 messageDiv.textContent = data.message;
                 
-                // Save digital ID and redirect to Dashboard
-                localStorage.setItem('spyser_role', data.role);
-                localStorage.setItem('spyser_admission_number', data.admissionNumber);
+                // Save specific Zeta IDs to memory
+                localStorage.setItem('zeta_role', data.role);
+                localStorage.setItem('zeta_name', data.fullName);
+                localStorage.setItem('zeta_id', data.admissionNumber);
+                localStorage.setItem('zeta_class', data.classGrade);
+                localStorage.setItem('zeta_school', data.school);
                 
-                setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+                setTimeout(() => window.location.href = '/dashboard.html', 1000);
             } else {
                 messageDiv.style.color = "red";
                 messageDiv.textContent = data.message;

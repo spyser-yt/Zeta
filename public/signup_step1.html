@@ -6,7 +6,7 @@
         body { font-family: Arial, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
         input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { background: #2c3e50; color: white; cursor: pointer; font-weight: bold; }
+        button { background: #2c3e50; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 16px;}
         h2 { text-align: center; color: #2c3e50; }
     </style>
 </head>
@@ -31,12 +31,10 @@
     <script>
         document.getElementById('step1-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Save data to browser memory temporarily
             localStorage.setItem('zeta_temp_role', document.getElementById('role').value);
             localStorage.setItem('zeta_temp_email', document.getElementById('email').value);
             localStorage.setItem('zeta_temp_phone', document.getElementById('phone').value);
             localStorage.setItem('zeta_temp_pass', document.getElementById('password').value);
-            // Move to Step 2
             window.location.href = '/signup_step2.html';
         });
     </script>

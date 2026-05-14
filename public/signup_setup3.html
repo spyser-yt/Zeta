@@ -8,18 +8,18 @@
         .photo-preview { width: 150px; height: 150px; border-radius: 50%; background: #eee; margin: 20px auto; border: 3px solid #3498db; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
         input[type="file"] { display: none; }
-        .upload-btn { background: #ecf0f1; color: #333; padding: 10px; border-radius: 6px; cursor: pointer; display: block; border: 1px solid #ccc; margin-bottom: 20px; }
-        button { width: 100%; background: #27ae60; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;}
+        .upload-btn { background: #ecf0f1; color: #333; padding: 10px; border-radius: 6px; cursor: pointer; display: block; border: 1px solid #ccc; margin-bottom: 20px; font-weight: bold;}
+        button { width: 100%; background: #e67e22; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;}
         #message { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>Upload Profile Photo</h2>
-        <p style="color:#777;">Final Step</p>
+        <h2 style="color:#2c3e50; margin-bottom:5px;">Upload Photo</h2>
+        <p style="color:#777; margin-bottom:20px;">Final Step</p>
         
         <label class="upload-btn">
-            Choose Image
+            Choose Image File
             <input type="file" id="photoInput" accept="image/*">
         </label>
 
@@ -28,20 +28,21 @@
             <img id="previewImg" src="" alt="Profile Preview">
         </div>
 
-        <button id="finishBtn">Finish Setup & Enter Zeta</button>
+        <button id="finishBtn">Complete Admission</button>
         <div id="message"></div>
     </div>
 
     <script>
+        if(!localStorage.getItem('zeta_temp_email')) window.location.href = '/signup_step1.html';
+
         let base64Photo = "";
 
-        // Handle Image Preview & Base64 Conversion
         document.getElementById('photoInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    base64Photo = event.target.result; // Saves the image as code
+                    base64Photo = event.target.result; 
                     document.getElementById('previewImg').src = base64Photo;
                     document.getElementById('previewImg').style.display = 'block';
                     document.getElementById('placeholder-text').style.display = 'none';
@@ -50,13 +51,11 @@
             }
         });
 
-        // Final Submission
         document.getElementById('finishBtn').addEventListener('click', async () => {
             const msg = document.getElementById('message');
             msg.style.color = "#333";
             msg.textContent = "Finalizing your Zeta Account...";
 
-            // Gather EVERYTHING from local storage
             const payload = {
                 role: localStorage.getItem('zeta_temp_role'),
                 email: localStorage.getItem('zeta_temp_email'),
@@ -84,13 +83,13 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // 1. Wipe temporary setup data for security
                     localStorage.clear(); 
                     
-                    // 2. Set permanent login data
                     localStorage.setItem('zeta_role', data.role);
                     localStorage.setItem('zeta_name', data.fullName);
                     localStorage.setItem('zeta_id', data.zetaID);
+                    localStorage.setItem('zeta_class', payload.classGrade);
+                    localStorage.setItem('zeta_school', payload.school);
                     
                     msg.style.color = "green";
                     msg.textContent = "Success! Redirecting to Dashboard...";
