@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Step 3 - Zeta Photo</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .photo-preview { width: 150px; height: 150px; border-radius: 50%; background: #eee; margin: 20px auto; border: 3px solid #3498db; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        input[type="file"] { display: none; }
+        .upload-btn { background: #ecf0f1; color: #333; padding: 10px; border-radius: 6px; cursor: pointer; display: block; border: 1px solid #ccc; margin-bottom: 20px; }
+        button { width: 100%; background: #27ae60; color: white; padding: 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;}
+        #message { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Upload Profile Photo</h2>
+        <p style="color:#777;">Final Step</p>
+        
+        <label class="upload-btn">
+            Choose Image
+            <input type="file" id="photoInput" accept="image/*">
+        </label>
+
+        <div class="photo-preview">
+            <span id="placeholder-text">No Image</span>
+            <img id="previewImg" src="" alt="Profile Preview">
+        </div>
+
+        <button id="finishBtn">Finish Setup & Enter Zeta</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        let base64Photo = "";
+
+        // Handle Image Preview & Base64 Conversion
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    base64Photo = event.target.result; // Saves the image as code
+                    document.getElementById('previewImg').src = base64Photo;
+                    document.getElementById('previewImg').style.display = 'block';
+                    document.getElementById('placeholder-text').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Final Submission
+        document.getElementById('finishBtn').addEventListener('click', async () => {
+            const msg = document.getElementById('message');
+            msg.style.color = "#333";
+            msg.textContent = "Finalizing your Zeta Account...";
+
+            // Gather EVERYTHING from local storage
+            const payload = {
+                role: localStorage.getItem('zeta_temp_role'),
+                email: localStorage.getItem('zeta_temp_email'),
+                personalPhone: localStorage.getItem('zeta_temp_phone'),
+                password: localStorage.getItem('zeta_temp_pass'),
+                fullName: localStorage.getItem('zeta_temp_name'),
+                dob: localStorage.getItem('zeta_temp_dob'),
+                gender: localStorage.getItem('zeta_temp_gender'),
+                school: localStorage.getItem('zeta_temp_school'),
+                classGrade: localStorage.getItem('zeta_temp_class'),
+                course: localStorage.getItem('zeta_temp_course'),
+                whatsappPhone: localStorage.getItem('zeta_temp_wp'),
+                parentPhone: localStorage.getItem('zeta_temp_parent'),
+                address: localStorage.getItem('zeta_temp_address'),
+                profilePhoto: base64Photo
+            };
+
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // 1. Wipe temporary setup data for security
+                    localStorage.clear(); 
+                    
+                    // 2. Set permanent login data
+                    localStorage.setItem('zeta_role', data.role);
+                    localStorage.setItem('zeta_name', data.fullName);
+                    localStorage.setItem('zeta_id', data.zetaID);
+                    
+                    msg.style.color = "green";
+                    msg.textContent = "Success! Redirecting to Dashboard...";
+                    
+                    setTimeout(() => window.location.href = '/dashboard.html', 1500);
+                } else {
+                    msg.style.color = "red";
+                    msg.textContent = data.message;
+                }
+            } catch (error) {
+                msg.style.color = "red";
+                msg.textContent = "Connection error.";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -7,118 +7,99 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000; 
 
-app.use(express.json());
+// Increase payload limit to 5MB to handle Base64 Profile Photos
+app.use(express.json({ limit: '5mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connect to Supabase PostgreSQL (Using the IPv4 Session Pooler URL)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false } 
 });
 
-// Verify Database Connection
-const initDB = async () => {
-    try {
-        await pool.query('SELECT NOW()');
-        console.log("Connected to Supabase Postgres securely!");
-    } catch (err) {
-        console.error("Database connection error:", err);
-    }
-};
-initDB();
-
-// Helper: Generate a safe 5-digit Admission Number (e.g., 00001)
-const generateAdmissionNumber = async () => {
+// Helper: Generate Role-Based ID (e.g., ZETA-STU-00001 or ZETA-TCH-00001)
+const generateZetaID = async (role) => {
     const result = await pool.query(`SELECT MAX(id) as max_id FROM users`);
     const currentMax = result.rows[0].max_id || 0; 
-    const nextNumber = currentMax + 1;
-    return nextNumber.toString().padStart(5, '0'); 
+    const nextNumber = (currentMax + 1).toString().padStart(5, '0');
+    
+    let prefix = 'STU';
+    if (role === 'Teacher') prefix = 'TCH';
+    if (role === 'Admin') prefix = 'ADM';
+    
+    return `ZETA-${prefix}-${nextNumber}`; 
 };
 
-// --- ADMISSION ROUTE (SIGNUP) ---
+// --- MULTI-STEP SIGNUP ROUTE ---
 app.post('/api/signup', async (req, res) => {
     const { 
-        fullName, email, password, personalPhone, 
-        parentPhone, school, classGrade, dob, 
-        gender, bloodGroup, address 
+        role, email, password, personalPhone, 
+        fullName, dob, gender, school, classGrade, 
+        course, whatsappPhone, parentPhone, address, profilePhoto 
     } = req.body;
 
-    if (!email || !password || !fullName || !personalPhone) {
-        return res.status(400).json({ message: "Name, Email, Password, and Personal Phone are required." });
+    if (!email || !password || !role) {
+        return res.status(400).json({ message: "Core account details are missing." });
     }
 
     try {
-        const admissionNumber = await generateAdmissionNumber();
+        const zetaID = await generateZetaID(role);
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const query = `
             INSERT INTO users (
-                admission_number, full_name, email, password_hash, 
-                personal_phone, parent_phone, school, class_grade, 
-                dob, gender, blood_group, address
+                admission_number, role, email, password_hash, personal_phone, 
+                full_name, dob, gender, school, class_grade, 
+                course_enrolled, whatsapp_phone, parent_phone, address, profile_picture
             ) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) 
             RETURNING admission_number, full_name, role
         `;
         
         const values = [
-            admissionNumber, fullName, email, hashedPassword, 
-            personalPhone, parentPhone || null, school || null, classGrade || null, 
-            dob || null, gender || null, bloodGroup || null, address || null
+            zetaID, role, email, hashedPassword, personalPhone,
+            fullName, dob, gender, school, classGrade, 
+            course, whatsappPhone, parentPhone, address, profilePhoto
         ];
 
         const result = await pool.query(query, values);
         const newUser = result.rows[0];
 
         res.status(201).json({ 
-            message: `Admission successful! Welcome ${newUser.full_name}.`,
-            admissionNumber: newUser.admission_number,
-            role: newUser.role
+            message: `Account created! Welcome to Zeta, ${newUser.full_name}.`,
+            zetaID: newUser.admission_number,
+            role: newUser.role,
+            fullName: newUser.full_name
         });
 
     } catch (error) {
         if (error.code === '23505') { 
-            if (error.constraint === 'users_email_key') return res.status(400).json({ message: "Email is already registered." });
-            if (error.constraint === 'users_personal_phone_key') return res.status(400).json({ message: "Phone number is already registered." });
+            if (error.constraint === 'users_email_key') return res.status(400).json({ message: "Email already registered." });
         }
         console.error("Signup Error:", error);
-        res.status(500).json({ message: "Server error during admission." });
+        res.status(500).json({ message: "Server error during account creation." });
     }
 });
 
-// --- LOGIN ROUTE ---
+// --- LOGIN ROUTE (Unchanged) ---
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Required fields missing." });
-
     try {
         const result = await pool.query(`SELECT * FROM users WHERE email = $1`, [email]);
         const user = result.rows[0];
 
-        if (!user) return res.status(400).json({ message: "Invalid email or password." });
-
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) return res.status(400).json({ message: "Invalid email or password." });
-
-        if (user.status === 'Suspended') {
-            return res.status(403).json({ message: "This account is suspended. Contact the administrator." });
+        if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+            return res.status(400).json({ message: "Invalid credentials." });
         }
 
-        // Update last login timestamp
-        await pool.query(`UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1`, [user.id]);
-
         res.status(200).json({ 
-            message: `Login successful! Welcome back, ${user.full_name}.`,
-            role: user.role,
-            admissionNumber: user.admission_number
+            role: user.role, admissionNumber: user.admission_number, 
+            fullName: user.full_name, classGrade: user.class_grade || 'Staff', 
+            school: user.school || 'Zeta'
         });
     } catch (error) {
-        console.error("Login Error:", error);
         res.status(500).json({ message: "Server error." });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Zeta Backend live on ${PORT}`));

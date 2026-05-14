@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Step 1 - Zeta Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 350px; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background: #2c3e50; color: white; cursor: pointer; font-weight: bold; }
+        h2 { text-align: center; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Zeta Account Setup</h2>
+        <p style="text-align:center; color:#777;">Step 1: Verification</p>
+        <form id="step1-form">
+            <select id="role" required>
+                <option value="">Select Your Role...</option>
+                <option value="Student">Student</option>
+                <option value="Teacher">Teacher</option>
+                <option value="Admin">Administrator</option>
+            </select>
+            <input type="email" id="email" placeholder="Email Address" required>
+            <input type="tel" id="phone" placeholder="Primary Phone Number" required>
+            <input type="password" id="password" placeholder="Create Password" required>
+            <button type="submit">Continue to Profile ➔</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('step1-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Save data to browser memory temporarily
+            localStorage.setItem('zeta_temp_role', document.getElementById('role').value);
+            localStorage.setItem('zeta_temp_email', document.getElementById('email').value);
+            localStorage.setItem('zeta_temp_phone', document.getElementById('phone').value);
+            localStorage.setItem('zeta_temp_pass', document.getElementById('password').value);
+            // Move to Step 2
+            window.location.href = '/signup_step2.html';
+        });
+    </script>
+</body>
+</html>

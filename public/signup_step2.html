@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Step 2 - Zeta Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px;}
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 600px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        input, select, textarea, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background: #3498db; color: white; cursor: pointer; font-weight: bold; margin-top: 20px; padding: 15px;}
+        h2 { text-align: center; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Complete Your Profile</h2>
+        <p style="text-align:center; color:#777;">Step 2: Personal Details</p>
+        <form id="step2-form">
+            <div class="grid">
+                <input type="text" id="fullName" placeholder="Full Legal Name" class="full-width" required>
+                <input type="date" id="dob" required title="Date of Birth">
+                <select id="gender" required>
+                    <option value="">Gender...</option>
+                    <option value="Male">Male</option><option value="Female">Female</option>
+                </select>
+                <input type="text" id="school" placeholder="Current School Name">
+                <input type="text" id="classGrade" placeholder="Class / Grade (e.g., +2 Science)">
+                <input type="text" id="course" placeholder="Zeta Course Enrolling In" class="full-width" required>
+                <input type="tel" id="whatsapp" placeholder="WhatsApp Number">
+                <input type="tel" id="parentPhone" placeholder="Parent's Phone Number">
+                <textarea id="address" placeholder="Full Residential Address" class="full-width" rows="3"></textarea>
+            </div>
+            <button type="submit">Continue to Photo Upload ➔</button>
+        </form>
+    </div>
+
+    <script>
+        // Security: If they bypassed Step 1, send them back
+        if(!localStorage.getItem('zeta_temp_email')) window.location.href = '/signup_step1.html';
+
+        document.getElementById('step2-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            localStorage.setItem('zeta_temp_name', document.getElementById('fullName').value);
+            localStorage.setItem('zeta_temp_dob', document.getElementById('dob').value);
+            localStorage.setItem('zeta_temp_gender', document.getElementById('gender').value);
+            localStorage.setItem('zeta_temp_school', document.getElementById('school').value);
+            localStorage.setItem('zeta_temp_class', document.getElementById('classGrade').value);
+            localStorage.setItem('zeta_temp_course', document.getElementById('course').value);
+            localStorage.setItem('zeta_temp_wp', document.getElementById('whatsapp').value);
+            localStorage.setItem('zeta_temp_parent', document.getElementById('parentPhone').value);
+            localStorage.setItem('zeta_temp_address', document.getElementById('address').value);
+            
+            window.location.href = '/signup_step3.html';
+        });
+    </script>
+</body>
+</html>
